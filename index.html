@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenisový Rozhodca Pro</title>
+    <style>
+        :root {
+            --primary: #39ff14;
+            --court-blue: #2a61af;
+            --dark: rgba(18, 18, 22, 0.95);
+            --tennis-green: #2c6b41; 
+            --hawkeye-color: #9b59b6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+            min-height: 100vh;
+            /* Nastavenie antukového pozadia pre menu */
+            background: linear-gradient(rgba(18, 21, 20, 0.65), rgba(18, 21, 20, 0.85)), 
+                        url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            transition: background 0.4s ease;
+        }
+
+        /* Keď je zápas aktívny, pozadie sa prepne na čistú zelenú */
+        body.match-active-bg {
+            background: var(--tennis-green) !important;
+        }
+
+        nav {
+            background-color: rgba(18, 18, 22, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            padding: 15px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: #bbb;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav button:hover {
+            color: #fff;
+        }
+
+        nav button.active {
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Moderný polopriesvitný sklenený efekt pre karty v menu */
+        .card {
+            background: rgba(25, 25, 32, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Pevné tmavé pozadie pre samotný zápas, aby neodpútavalo pozornosť */
+        .match-active-card, .history-card-style {
+            background: rgba(18, 18, 24, 0.95);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: none;
+        }
+
+        h2, h3 { 
+            margin-top: 0;
+            text-align: center; 
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        input, select, button {
+            padding: 12px 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin: 5px 0;
+            box-sizing: border-box;
+            background-color: rgba(30, 30, 40, 0.9);
+            color: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            background-color: var(--court-blue);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        button:hover { 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger { background-color: #ff4d4d; color: white; }
+        .btn-danger:hover { background-color: #e04343; }
+        .btn-success { background-color: #2ed573; color: white; }
+        .btn-success:hover { background-color: #26af5f; }
+        
+        .btn-warning { background-color: #ffa500; color: white; opacity: 1; pointer-events: auto; }
+        .btn-warning:hover { background-color: #cc8400; }
+        
+        .btn-warning:disabled {
+            background-color: #3a3a45 !important;
+            color: #777785 !important;
+            border: 1px solid #2d2d38 !important;
+            opacity: 0.4 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        .btn-info { background-color: #1e90ff; color: white; }
+        .btn-info:hover { background-color: #117ee4; }
+
+        .btn-hawkeye { background-color: var(--hawkeye-color); color: white; border: 1px solid #8e44ad; }
+        .btn-hawkeye:hover { background-color: #8e44ad; }
+        
+        .w-100 { width: 100%; }
+
+        .player-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(35, 35, 45, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .player-box {
+            background: rgba(20, 20, 28, 0.85);
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .player-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255,255,255,0.05);
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        .player-skills-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .skill-badge {
+            background: rgba(30, 30, 40, 0.8);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .skill-badge span { color: #bbb; }
+        .skill-badge strong { color: #fff; }
+
+        .wl-bar-container {
+            background: #444;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+            display: flex;
+        }
+        .wl-bar-win { background: #2ed573; height: 100%; }
+        .wl-bar-loss { background: #ff4d4d; height: 100%; }
+
+        .form-dots { display: flex; gap: 5px; }
+        .form-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .form-w { background: #2ed573; box-shadow: 0 0 6px rgba(46,213,115,0.4); }
+        .form-l { background: #ff4d4d; box-shadow: 0 0 6px rgba(255,77,77,0.4); }
+        .form-empty { background: #444; color: #888; }
+
+        .history-item {
+            background: rgba(30, 30, 40, 0.85);
+            padding: 18px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-actions { display: flex; flex-direction: column; gap: 8px; }
+
+        .large-board {
+            background: #15151c !important;
+            max-width: 750px !important;
+            width: 95% !important;
+            border: 2px solid var(--court-blue) !important;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 25px !important;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            border: 1px solid #2a2a35;
+            text-align: center;
+        }
+        .stats-table th { background: #1e1e26; color: #aaa; }
+
+        .large-timeline {
+            background: #0d0d12;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .large-timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #161622;
+            border-left: 4px solid #555;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .large-timeline-item .tl-text { flex: 1; padding-right: 15px; color: #e0e0e0; }
+        .large-timeline-item .tl-time { font-weight: bold; color: #888; margin-right: 10px; white-space: nowrap; }
+        .large-timeline-item .tl-score {
+            background: #252535;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 13px;
+            white-space: nowrap;
+            border: 1px solid #3a3a4e;
+        }
+
+        .tl-item-hawkeye {
+            background: rgba(155, 89, 182, 0.12) !important;
+            border-left: 5px solid var(--hawkeye-color) !important;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+        .tl-item-hawkeye .tl-text { color: #e2b6f3 !important; font-weight: 600; }
+        .tl-item-announcement { background: rgba(57, 255, 20, 0.05) !important; border-left: 5px solid var(--primary) !important; }
+        .tl-item-announcement .tl-text { color: #b3ff99 !important; font-style: italic; }
+        .tl-item-winner {
+            background: rgba(46, 213, 115, 0.18) !important;
+            border-left: 6px solid #2ed573 !important;
+            box-shadow: 0 0 10px rgba(46, 213, 115, 0.2);
+        }
+        .tl-item-winner .tl-text { color: #2ed573 !important; font-weight: bold; font-size: 15px; }
+        .tl-item-misconduct { background: rgba(255, 77, 77, 0.12) !important; border-left: 5px solid #ff4d4d !important; }
+        .tl-item-misconduct .tl-text { color: #ff9999 !important; }
+
+        .scoreboard {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #1e1e26;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .scoreboard th, .scoreboard td { padding: 14px; border: 1px solid #333; }
+        .scoreboard th { background-color: #15151d; color: #aaa; font-size: 14px; text-transform: uppercase; }
+        
+        .serving-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 10px var(--primary);
+            visibility: hidden;
+        }
+
+        .probability-label {
+            text-align: center;
+            font-size: 13px; 
+            font-weight: bold; 
+            margin-bottom: 3px; 
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .probability-container {
+            margin: 5px 0 15px 0;
+            background: #252530;
+            border-radius: 20px;
+            height: 24px;
+            display: flex;
+            overflow: hidden;
+            font-weight: bold;
+            color: white;
+            font-size: 13px;
+            text-align: center;
+            line-height: 24px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .prob-bar-p1 { background-color: #2ed573; transition: width 0.4s ease; width: 50%; }
+        .prob-bar-p2 { background-color: #1e90ff; transition: width 0.4s ease; width: 50%; }
+
+        .court-wrapper { display: flex; justify-content: center; margin: 25px 0; }
+        .court {
+            width: 460px;
+            height: 320px;
+            background-color: var(--court-blue);
+            border: 4px solid white;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        .net {
+            position: absolute;
+            left: 50%; top: 0; height: 100%; width: 2px;
+            background-color: rgba(255,255,255,0.7);
+            border-left: 2px dashed white;
+        }
+        .service-line-top { position: absolute; left: 25%; top: 0; height: 100%; width: 2px; background-color: white; }
+        .service-line-bottom { position: absolute; right: 25%; top: 0; height: 100%; width: 2px; background-color: white; }
+        .center-line { position: absolute; top: 50%; left: 25%; width: 50%; height: 2px; background-color: white; }
+
+        .player-dot {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            position: absolute;
+            transition: all 0.4s ease-in-out;
+            transform: translate(-50%, -50%);
+            border: 2px solid white;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        #dot-p1 { background-color: #2ed573; } 
+        #dot-p2 { background-color: #1e90ff; } 
+
+        .controls { display: flex; justify-content: space-between; gap: 15px; }
+        .control-box {
+            background: #1e1e26;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            border: 1px solid #333;
+        }
+
+        .timer {
+            font-size: 22px;
+            text-align: center;
+            font-weight: bold;
+            margin: 12px 0;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-content {
+            background: #1e1e26;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid var(--primary);
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+
+        .misconduct-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .btn-misconduct-choice {
+            background-color: #2c3e50;
+            color: #fff;
+            border: 1px solid #34495e;
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-misconduct-choice:hover { background-color: #16a085; border-color: #1abc9c; }
+        .btn-misconduct-choice.danger-choice:hover { background-color: #e74c3c; border-color: #c0392b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <nav id="main-nav">
+        <button id="nav-match" class="active" onclick="showSection('match')">Hrať zápas</button>
+        <button id="nav-players" onclick="showSection('players')">Hráči</button>
+        <button id="nav-history" onclick="showSection('history')">História zápasov</button>
+    </nav>
+
+    <div class="container">
+
+        <div id="section-match-setup" class="card">
+            <h2>Nastavenie nového zápasu</h2>
+            <div id="setup-error" style="background-color: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff8888; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;" class="hidden">
+                Prosím, vyplňte všetky nastavenia pred spustením zápasu!
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Ľavá strana (Zelená):</label>
+                <select id="select-p1" class="w-100"></select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Pravá strana (Modrá):</label>
+                <select id="select-p2" class="w-100"></select>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <label>Počet víťazných setov:</label>
+                <select id="select-sets-target" class="w-100">
+                    <option value="" disabled selected style="color:#888;">Vyberte počet výherných setov</option>
+                    <option value="1">1 víťazný set (Rýchly zápas)</option>
+                    <option value="2">2 víťazné sety (Klasický zápas)</option>
+                </select>
+            </div>
+            <button class="btn-success w-100" style="font-size: 18px;" onclick="openServerModal()">SPUSTIŤ ZÁPAS</button>
+        </div>
+
+        <div id="section-match-active" class="card match-active-card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: var(--primary);">Prebiehajúci zápas (<span id="match-target-label">2</span> víťazné sety)</h3>
+                <button class="btn-danger" onclick="openAbortModal()">Ukončiť</button>
+            </div>
+
+            <div class="timer">⏱ Čas zápasu: <span id="match-timer">00:00</span></div>
+
+            <div class="probability-label">📊 Šanca pred zápasom:</div>
+            <div class="probability-container">
+                <div id="start-prob-p1" class="prob-bar-p1">50%</div>
+                <div id="start-prob-p2" class="prob-bar-p2">50%</div>
+            </div>
+
+            <div class="probability-label">🔥 Aktuálna šanca (Vývoj na kurte):</div>
+            <div class="probability-container">
+                <div id="live-prob-p1" class="prob-bar-p1">50%</div>
+                <div id="live-prob-p2" class="prob-bar-p2">50%</div>
+            </div>
+
+            <table class="scoreboard">
+                <thead>
+                    <tr>
+                        <th>Hráč</th>
+                        <th>Sety</th>
+                        <th>Gemy</th>
+                        <th>Body</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: left;"><span id="s-dot-1" class="serving-dot"></span><span id="name-p1">Hráč 1</span></td>
+                        <td id="sets-p1">0</td>
+                        <td id="games-p1">0</td>
+                        <td id="points-p1" style="font-weight: bold; color: #2ed573;">0</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;"><span id="s-dot-2" class="serving-dot"></span><span id="name-p2">Hráč 2</span></td>
+                        <td id="sets-p2">0</td>
+                        <td id="games-p2">0</td>
+                        <td id="points-p2" style="font-weight: bold; color: #1e90ff;">0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="court-wrapper">
+                <div class="court">
+                    <div class="net"></div>
+                    <div class="service-line-top"></div>
+                    <div class="service-line-bottom"></div>
+                    <div class="center-line"></div>
+                    <div id="dot-p1" class="player-dot">??</div>
+                    <div id="dot-p2" class="player-dot">??</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px; text-align: center; display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn-hawkeye w-100" style="font-size: 16px; padding: 14px;" onclick="startHawkEyeProcess()">🦅 JASTRABIE OKO (Hawk-Eye)</button>
+                <button class="btn-info w-100" style="font-size: 16px; padding: 14px; background-color: #00ebff; color: #121216;" onclick="triggerDirectAce()">⚡ REÁLNE ESO (Ace podávajúceho)</button>
+            </div>
+
+            <div class="controls">
+                <div class="control-box">
+                    <div id="btn-label-p1" style="font-weight: bold; margin-bottom: 10px; color: #2ed573;">Hráč 1</div>
+                    <button class="btn-success w-100" onclick="registerPointAction(1, 'regular')">+ Bod</button>
+                    <button id="btn-fault-p1" class="btn-warning w-100" style="margin-top: 5px;" onclick="registerPointAction(2, 'fault_p1')">⚠️ Dvojchyba</button>
+                    <button class="btn-danger w-100" style="margin-top: 5px; background-color: #bdc3c7; color: #2c3e50;" onclick="openMisconductModal(1)">❌ Nešportové správanie</button>
+                    <button class="btn-danger w-100" style="margin-top: 15px;" onclick="undoPoint()">Vymazať bod</button>
+                </div>
+                <div class="control-box">
+                    <div id="btn-label-p2" style="font-weight: bold; margin-bottom: 10px; color: #1e90ff;">Hráč 2</div>
+                    <button class="btn-success w-100" onclick="registerPointAction(2, 'regular')">+ Bod</button>
+                    <button id="btn-fault-p2" class="btn-warning w-100" style="margin-top: 5px;" onclick="registerPointAction(1, 'fault_p2')">⚠️ Dvojchyba</button>
+                    <button class="btn-danger w-100" style="margin-top: 5px; background-color: #bdc3c7; color: #2c3e50;" onclick="openMisconductModal(2)">❌ Nešportové správanie</button>
+                    <button class="btn-danger w-100" style="margin-top: 15px;" onclick="undoPoint()">Vymazať bod</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-players" class="card">
+            <h2 style="color: var(--primary);">Zoznam a štatistiky hráčov</h2>
+            <div class="player-form">
+                <input type="text" id="player-firstname" placeholder="Meno">
+                <input type="text" id="player-lastname" placeholder="Priezvisko">
+                <button class="btn-success" onclick="addPlayer()">Pridať hráča</button>
+            </div>
+            <div id="players-list"></div>
+        </div>
+
+        <div id="section-history" class="card">
+            <h2 style="color: var(--primary);">História zápasov</h2>
+            <div id="history-list"><i>Žiadne odohrané zápasy.</i></div>
+        </div>
+
+    </div>
+
+    <div id="he-modal-requester" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #9b59b6;">
+            <h3 style="color: #9b59b6; margin-bottom: 15px;">🦅 Jastrabie oko (Krok 1)</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Ktorý hráč žiada o preverenie?</p>
+            <div class="misconduct-grid">
+                <button class="btn-misconduct-choice" id="btn-he-req-p1" onclick="submitHawkEyeRequester(1)">Hráč 1</button>
+                <button class="btn-misconduct-choice" id="btn-he-req-p2" onclick="submitHawkEyeRequester(2)">Hráč 2</button>
+            </div>
+            <button class="btn-danger w-100" style="background: #444; color: white; margin-top: 15px;" onclick="closeModal('he-modal-requester')">Zrušiť</button>
+        </div>
+    </div>
+
+    <div id="he-modal-type" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #9b59b6;">
+            <h3 style="color: #9b59b6; margin-bottom: 15px;">🦅 Jastrabie oko (Krok 2)</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Čo sa ide na kurte preverovať?</p>
+            <div class="misconduct-grid">
+                <button class="btn-misconduct-choice" onclick="submitHawkEyeType('regular')">🟢 Klasický bod z hry</button>
+                <button class="btn-misconduct-choice" onclick="submitHawkEyeType('ace')">⚡ ESO (Ace)</button>
+                <button class="btn-misconduct-choice" onclick="submitHawkEyeType('fault')">⚠️ Dvojchyba</button>
+            </div>
+            <button class="btn-danger w-100" style="background: #444; color: white; margin-top: 15px;" onclick="closeModal('he-modal-type')">Zrušiť</button>
+        </div>
+    </div>
+
+    <div id="he-modal-verdict" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #9b59b6;">
+            <h3 style="color: #9b59b6; margin-bottom: 15px;">🦅 Jastrabie oko (Krok 3)</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Aký je výsledok elektronického overenia?</p>
+            <div class="misconduct-grid">
+                <button class="btn-danger w-100" style="padding: 14px; background-color: #e74c3c;" onclick="submitHawkEyeVerdict(false)">❌ ZBYTOČNÁ VÝZVA (Pôvodný výrok platí)</button>
+                <button class="btn-success w-100" style="padding: 14px; background-color: #2ed573;" onclick="submitHawkEyeVerdict(true)">✅ UZNANÁ VÝZVA (Zmena rozhodnutia)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="he-modal-action-choice" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #9b59b6;">
+            <h3 style="color: #9b59b6; margin-bottom: 15px;">🦅 Voľba nápravy</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Výzva bola úspešná. Čo si prajete urobiť?</p>
+            <div class="modal-buttons">
+                <button class="btn-success w-100" style="padding: 14px;" onclick="selectHawkEyeAction('add')">➕ PRIPÍSAŤ BOD</button>
+                <button class="btn-danger w-100" style="padding: 14px; background-color: #f39c12; border-color: #e67e22;" onclick="selectHawkEyeAction('delete')">➖ VYMAZAŤ BOD</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="he-modal-target-player" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #9b59b6;">
+            <h3 style="color: #9b59b6; margin-bottom: 15px;" id="he-target-title">Komu akciu pripísať?</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Vyberte hráča:</p>
+            <div class="misconduct-grid">
+                <button class="btn-misconduct-choice" id="btn-he-target-p1" onclick="submitHawkEyeTargetPlayer(1)">Hráč 1</button>
+                <button class="btn-misconduct-choice" id="btn-he-target-p2" onclick="submitHawkEyeTargetPlayer(2)">Hráč 2</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="he-modal-compensate-opponent" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #9b59b6;">
+            <h3 style="color: #9b59b6; margin-bottom: 15px;">➕ Pripísať bod súperovi?</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Chcete vymazaný bod automaticky pripísať protihráčovi (<strong id="he-opponent-name" style="color: var(--primary);">...</strong>)?</p>
+            <div class="modal-buttons">
+                <button class="btn-danger w-100" style="padding: 14px; background-color: #e74c3c;" onclick="submitHawkEyeCompensate(false)">❌ NIE (Iba zmazať)</button>
+                <button class="btn-success w-100" style="padding: 14px;" onclick="submitHawkEyeCompensate(true)">✅ ÁNO (Pripísať)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-confirm-player-delete" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #ff4d4d;">
+            <h3>⚠️ Pozor, vymazať hráča?</h3>
+            <p style="color: #ddd; margin-bottom: 20px; font-size: 15px;">Naozaj chcete natrvalo vymazať hráča <br><strong id="delete-modal-player-name" style="color: #fff;">...</strong>?</p>
+            <div class="modal-buttons">
+                <button style="background: #444; color: white;" class="w-100" onclick="closeModal('modal-confirm-player-delete')">Nie</button>
+                <button class="btn-danger w-100" id="btn-confirm-player-delete-execute">Áno, vymazať</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-misconduct" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #ff4d4d; max-width: 500px;">
+            <h3 style="color: #ff4d4d; margin-bottom: 5px;">Nešportové správanie</h3>
+            <p style="color: #ccc; font-size: 15px; margin-bottom: 15px;">Hráč: <strong id="misconduct-player-name" style="color:#fff;"></strong></p>
+            <div class="misconduct-grid">
+                <button class="btn-misconduct-choice danger-choice" onclick="selectMisconductDirect('Hádzanie / zničenie rakety')">🎾 Hádzanie / zničenie rakety</button>
+                <button class="btn-misconduct-choice danger-choice" onclick="selectMisconductDirect('Úmyselné odpálenie loptičky mimo kurt')">💥 Odpálenie loptičky mimo kurt</button>
+                <button class="btn-misconduct-choice danger-choice" onclick="selectMisconductDirect('Verbálne vulgarizmy and nadávky')">🤬 Verbálne vulgarizmy and nadávky</button>
+                <button class="btn-misconduct-choice danger-choice" onclick="selectMisconductDirect('Nevhodné and urážlivé gestá')">👎 Nevhodné and urážlivé gestá</button>
+                <button class="btn-misconduct-choice danger-choice" onclick="selectMisconductDirect('Slovný útok na rozhodcu alebo súpera')">🗣 Útok na rozhodcu / súpera</button>
+                <button class="btn-misconduct-choice danger-choice" onclick="selectMisconductDirect('Zdržiavanie hry / porušenie časového limitu')">⏳ Zdržiavanie hry</button>
+            </div>
+            <button class="btn-danger w-100" style="background: #444; color: white; margin-top: 15px;" onclick="closeModal('modal-misconduct')">Zrušiť</button>
+        </div>
+    </div>
+
+    <div id="modal-server" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary); margin-bottom: 15px;">Kto bude podávať ako prvý?</h3>
+            <div style="margin-bottom: 20px;"><select id="modal-server-select" class="w-100"></select></div>
+            <div class="modal-buttons">
+                <button class="btn-danger w-100" onclick="closeModal('modal-server')">Zrušiť</button>
+                <button class="btn-success w-100" onclick="confirmStartMatch()">Potvrdiť a Hrať</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-abort" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 style="color: #ff4d4d; margin-bottom: 15px;">Ukončiť zápas</h3>
+            <p style="color: #ddd; margin-bottom: 20px;">Čo si prajete s rozohraným zápasom urobiť?</p>
+            <button class="btn-success w-100" style="margin-bottom: 10px; padding: 14px;" onclick="handleAbortAction('save')">💾 ULOŽIŤ DO HISTÓRIE</button>
+            <button class="btn-danger w-100" style="margin-bottom: 15px; padding: 14px;" onclick="handleAbortAction('delete')">🗑 ÚPLNE ZMAZAŤ</button>
+            <hr style="border: 0; border-top: 1px solid #444; margin-bottom: 15px;">
+            <button style="background: #444; color: white;" class="w-100" onclick="closeModal('modal-abort')">Pokračovať v zápase</button>
+        </div>
+    </div>
+
+    <div id="modal-confirm-delete" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #ff4d4d;">
+            <h3>⚠️ Vymazať zápas?</h3>
+            <p style="color: #ddd; margin-bottom: 20px; font-size: 15px;">Naozaj chcete vymazať zápas <br><strong id="delete-modal-match-name" style="color: #fff;">...</strong>?</p>
+            <div class="modal-buttons">
+                <button style="background: #444; color: white;" class="w-100" onclick="closeModal('modal-confirm-delete')">Nie</button>
+                <button class="btn-danger w-100" id="btn-confirm-delete-execute">Áno, vymazať</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-winner" class="modal-overlay hidden">
+        <div class="modal-content" style="border-color: #2ed573; max-width: 500px;">
+            <h2 style="color: #2ed573; margin-bottom: 10px; font-size: 28px;">🏆 KONIEC ZÁPASU 🏆</h2>
+            <p style="font-size: 18px; color: #fff; margin: 20px 0;">Tento zápas vyhral: <br><strong id="winner-modal-name" style="font-size: 24px; color: var(--primary); display: inline-block; margin-top: 10px;">Meno Hráča</strong></p>
+            <p style="color: #aaa; font-size: 14px;" id="winner-modal-score">Konečné skóre: 2 : 0</p>
+            <div style="margin-top: 25px;"><button class="btn-success w-100" style="padding: 16px; font-size: 18px;" onclick="saveAndExitFinishedMatch()">✅ UKONČIŤ A ULOŽIŤ ZÁPAS</button></div>
+        </div>
+    </div>
+
+    <div id="modal-match-details" class="modal-overlay hidden">
+        <div class="modal-content large-board">
+            <h2 id="det-board-title" style="color: var(--primary); margin-bottom: 5px; font-size: 22px;">Meno VS Meno</h2>
+            <div id="det-board-date" style="color: #aaa; font-size: 13px; margin-bottom: 20px;">Dátum zápasu: 12. 04. 2026</div>
+            <table class="stats-table">
+                <thead>
+                    <tr><th style="text-align: left;">Hráč</th><th>Sety</th><th>Detaily (Gemy)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td id="det-board-p1-name" style="text-align: left; font-weight: bold; color: #2ed573;">Hráč 1</td><td id="det-board-p1-sets" style="font-weight: bold; font-size: 20px;">0</td><td id="det-board-p1-details" style="color: #ccc;">-</td></tr>
+                    <tr><td id="det-board-p2-name" style="text-align: left; font-weight: bold; color: #1e90ff;">Hráč 2</td><td id="det-board-p2-sets" style="font-weight: bold; font-size: 20px;">0</td><td id="det-board-p2-details" style="color: #ccc;">-</td></tr>
+                </tbody>
+            </table>
+            <div style="display: flex; justify-content: space-around; background: #1e1e26; padding: 10px; border-radius: 8px; margin: 15px 0; font-size: 14px;">
+                <div>⏱ <strong>Trvanie:</strong> <span id="det-board-duration">00:00</span></div>
+                <div>🏆 <strong>Víťaz:</strong> <span id="det-board-winner" style="color: var(--primary); font-weight: bold;">Meno</span></div>
+            </div>
+            <div id="det-board-start-prob" style="text-align: center; background: #13131a; padding: 10px; border-radius: 8px; font-size: 14px; border: 1px solid #333; margin-bottom: 15px;">
+                📊 Predzápasový odhad šancí: <br><span id="det-board-prob-val" style="color: var(--primary); font-weight: bold; display: inline-block; margin-top: 5px; font-size: 15px;">Hráč 1 vs Hráč 2</span>
+            </div>
+            <h3 style="text-align: left; font-size: 16px; color: var(--primary); margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 5px;">📈 KOMPLETNÝ PRIEBEH ZÁPASU</h3>
+            <div class="large-timeline" id="det-board-timeline-container"></div>
+            <button class="btn-danger w-100" style="margin-top: 25px; padding: 12px; font-size: 16px;" onclick="closeModal('modal-match-details')">ZAVRIEŤ TABUĽU</button>
+        </div>
+    </div>
+
+    <script>
+        let matchHistory = JSON.parse(localStorage.getItem('tennis_match_history_pro')) || [];
+        let players = JSON.parse(localStorage.getItem('tennis_players_v4')) || [
+            { id: "111", first: 'Roger', last: 'Federer' },
+            { id: "222", first: 'Rafael', last: 'Nadal' },
+            { id: "333", first: 'Novak', last: 'Djokovic' }
+        ];
+
+        let activeMatch = null; let timerId = null; let secondsElapsed = 0;
+        const tennisPoints = ["0", "15", "30", "40", "A"];
+        let cachedWinnerNum = null; let cachedFinalState = null;
+        let matchIdToDelete = null; let playerIdToDelete = null; let currentMisconductPlayerNum = null;
+        let heState = { requester: null, type: null, verdict: null, action: null, targetPlayer: null };
+
+        window.onload = function() { renderPlayersList(); setupMatchSelects(); showSection('match'); };
+
+        function getPlayerInitials(playerId) {
+            let p = players.find(player => player.id === playerId);
+            if (!p) return "??";
+            return (p.first ? p.first.trim().charAt(0).toUpperCase() : "") + (p.last ? p.last.trim().charAt(0).toUpperCase() : "");
+        }
+
+        function getTotalPointsInCurrentGame() {
+            if (!activeMatch) return 0;
+            let p1Idx = tennisPoints.indexOf(activeMatch.p1Points); let p2Idx = tennisPoints.indexOf(activeMatch.p2Points);
+            if (activeMatch.p1Points === "A") return 7; if (activeMatch.p2Points === "A") return 7;
+            return (p1Idx > 0 ? p1Idx : 0) + (p2Idx > 0 ? p2Idx : 0);
+        }
+
+        function showSection(section) {
+            document.getElementById('nav-match').classList.remove('active'); document.getElementById('nav-players').classList.remove('active'); document.getElementById('nav-history').classList.remove('active');
+            document.getElementById('section-match-setup').classList.add('hidden'); document.getElementById('section-match-active').classList.add('hidden'); document.getElementById('section-players').classList.add('hidden'); document.getElementById('section-history').classList.add('hidden');
+            document.body.classList.remove('match-active-bg'); document.getElementById('main-nav').classList.remove('hidden');
+
+            if (section === 'match') {
+                document.getElementById('nav-match').classList.add('active');
+                if (activeMatch) { document.getElementById('section-match-active').classList.remove('hidden'); document.body.classList.add('match-active-bg'); document.getElementById('main-nav').classList.hidden = true; }
+                else { setupMatchSelects(); document.getElementById('section-match-setup').classList.remove('hidden'); }
+            } else if (section === 'players') { document.getElementById('nav-players').classList.add('active'); document.getElementById('section-players').classList.remove('hidden'); renderPlayersList(); }
+            else if (section === 'history') { document.getElementById('nav-history').classList.add('active'); document.getElementById('section-history').classList.remove('hidden'); renderHistoryList(); }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function calculatePlayerStats(playerId) {
+            let totalMatches = 0, wins = 0, pointsWonOnServe = 0, doubleFaults = 0, totalAces = 0;
+            let opponentsMap = {}; let recentForm = [];
+            matchHistory.forEach(m => {
+                let isP1 = (m.p1Id === playerId), isP2 = (m.p2Id === playerId);
+                if (isP1 || isP2) {
+                    totalMatches++; let oppId = isP1 ? m.p2Id : m.p1Id; let oppName = isP1 ? m.p2 : m.p1;
+                    if (!opponentsMap[oppId]) opponentsMap[oppId] = { wins: 0, total: 0, name: oppName };
+                    opponentsMap[oppId].total++;
+                    let playerWon = (isP1 && m.winner === 1) || (isP2 && m.winner === 2);
+                    if (playerWon) { wins++; opponentsMap[oppId].wins++; if(recentForm.length < 3) recentForm.push('W'); }
+                    else { if(recentForm.length < 3) recentForm.push('L'); }
+                    if (m.pointTimeline) {
+                        m.pointTimeline.forEach(t => {
+                            if (t.isServerAnnouncement || t.isWinnerAnnouncement || t.isMisconduct) return;
+                            if (isP1 && t.serverAtPoint === 1 && t.scorer === 1) pointsWonOnServe++;
+                            if (isP2 && t.serverAtPoint === 2 && t.scorer === 2) pointsWonOnServe++;
+                            if (isP1 && t.type === 'fault_p1') doubleFaults++; if (isP2 && t.type === 'fault_p2') doubleFaults++;
+                            if (isP1 && t.scorer === 1 && (t.type === 'ace' || t.type === 'hawkeye_ace')) totalAces++;
+                            if (isP2 && t.scorer === 2 && (t.type === 'ace' || t.type === 'hawkeye_ace')) totalAces++;
+                        });
+                    }
+                }
+            });
+            let bestOpponent = "Žiadny zápas", worstOpponent = "Žiadny zápas", maxWinRate = -1, minWinRate = 999;
+            for (let oppId in opponentsMap) {
+                let rate = opponentsMap[oppId].wins / opponentsMap[oppId].total;
+                if (rate > maxWinRate) { maxWinRate = rate; bestOpponent = opponentsMap[oppId].name + ` (${opponentsMap[oppId].wins}/${opponentsMap[oppId].total})`; }
+                if (rate < minWinRate) { minWinRate = rate; worstOpponent = opponentsMap[oppId].name + ` (${opponentsMap[oppId].wins}/${opponentsMap[oppId].total})`; }
+            }
+            return { totalMatches, wins, losses: totalMatches - wins, pointsWonOnServe, doubleFaults, totalAces, bestOpponent, worstOpponent, recentForm };
+        }
+
+        function renderPlayersList() {
+            let container = document.getElementById('players-list');
+            if (players.length === 0) { container.innerHTML = "<i>Žiadni hráči v databáze.</i>"; return; }
+            container.innerHTML = "";
+            players.forEach(p => {
+                let st = calculatePlayerStats(p.id); let winPct = st.totalMatches > 0 ? Math.round((st.wins / st.totalMatches) * 100) : 0; let lossPct = st.totalMatches > 0 ? (100 - winPct) : 0;
+                let formHTML = "";
+                for(let i=0; i<3; i++) {
+                    if(st.recentForm[i] === 'W') formHTML += `<div class="form-dot form-w">W</div>`;
+                    else if(st.recentForm[i] === 'L') formHTML += `<div class="form-dot form-l">L</div>`;
+                    else formHTML += `<div class="form-dot form-empty">-</div>`;
+                }
+                container.innerHTML += `
+                    <div class="player-box">
+                        <div class="player-box-header">
+                            <div><strong style="font-size: 20px; color: var(--primary);">${p.first} ${p.last}</strong></div>
+                            <button class="btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="askDeletePlayer('${p.id}')">Vymazať</button>
+                        </div>
+                        <div class="player-skills-grid">
+                            <div class="skill-badge" style="grid-column: span 2;">
+                                <div style="display: flex; justify-content: space-between; width: 100%;"><span>Úspešnosť</span><strong>${st.wins}V - ${st.losses}P (${winPct}%)</strong></div>
+                                <div class="wl-bar-container w-100"><div class="wl-bar-win" style="width: ${winPct}%"></div><div class="wl-bar-loss" style="width: ${lossPct}%"></div></div>
+                            </div>
+                            <div class="skill-badge"><span>Aktuálna forma</span><div class="form-dots">${formHTML}</div></div>
+                            <div class="skill-badge"><span>⚡ Priame esá</span><strong>${st.totalAces}</strong></div>
+                            <div class="skill-badge"><span>⚠️ Dvojchyby</span><strong>${st.doubleFaults}</strong></div>
+                            <div class="skill-badge"><span>🎾 Body na podaní</span><strong>${st.pointsWonOnServe}</strong></div>
+                            <div class="skill-badge" style="grid-column: span 2;"><span>🏆 Najobľúbenejší súper</span><strong style="color: #2ed573;">${st.bestOpponent}</strong></div>
+                            <div class="skill-badge" style="grid-column: span 2;"><span>👹 Úhlavný nepriateľ</span><strong style="color: #ff4d4d;">${st.worstOpponent}</strong></div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function askDeletePlayer(id) {
+            playerIdToDelete = id; let p = players.find(x => x.id === id);
+            document.getElementById('delete-modal-player-name').innerText = p ? `${p.first} ${p.last}` : "...";
+            document.getElementById('btn-confirm-player-delete-execute').onclick = function() {
+                players = players.filter(x => x.id !== playerIdToDelete); localStorage.setItem('tennis_players_v4', JSON.stringify(players));
+                closeModal('modal-confirm-player-delete'); renderPlayersList();
+            };
+            openModal('modal-confirm-player-delete');
+        }
+
+        function addPlayer() {
+            let f = document.getElementById('player-firstname').value.trim(); let l = document.getElementById('player-lastname').value.trim();
+            if (!f || !l) { alert("Vyplňte meno aj priezvisko!"); return; }
+            players.push({ id: "id_" + Date.now() + "_" + Math.floor(Math.random()*1000), first: f, last: l });
+            localStorage.setItem('tennis_players_v4', JSON.stringify(players));
+            document.getElementById('player-firstname').value = ""; document.getElementById('player-lastname').value = "";
+            renderPlayersList();
+        }
+
+        function setupMatchSelects() {
+            let s1 = document.getElementById('select-p1'), s2 = document.getElementById('select-p2');
+            s1.innerHTML = `<option value="" disabled selected>Vyberte hráča na ľavú stranu</option>`;
+            s2.innerHTML = `<option value="" disabled selected>Vyberte hráča na pravú stranu</option>`;
+            players.forEach(p => {
+                s1.innerHTML += `<option value="${p.id}">${p.first} ${p.last}</option>`; s2.innerHTML += `<option value="${p.id}">${p.first} ${p.last}</option>`;
+            });
+            document.getElementById('select-sets-target').value = "";
+        }
+
+        function openServerModal() {
+            let p1 = document.getElementById('select-p1').value, p2 = document.getElementById('select-p2').value, target = document.getElementById('select-sets-target').value;
+            if (!p1 || !p2 || !target) { document.getElementById('setup-error').classList.remove('hidden'); setTimeout(() => document.getElementById('setup-error').classList.add('hidden'), 4000); return; }
+            if (p1 === p2) { alert("Hráč nemôže hrať sám proti sebe!"); return; }
+            let selectModal = document.getElementById('modal-server-select'); selectModal.innerHTML = "";
+            let o1 = players.find(x => x.id === p1), o2 = players.find(x => x.id === p2);
+            selectModal.innerHTML += `<option value="1">${o1.first} ${o1.last}</option><option value="2">${o2.first} ${o2.last}</option>`;
+            openModal('modal-server');
+        }
+
+        function confirmStartMatch() {
+            let p1Id = document.getElementById('select-p1').value, p2Id = document.getElementById('select-p2').value, setsTarget = parseInt(document.getElementById('select-sets-target').value), firstServer = parseInt(document.getElementById('modal-server-select').value);
+            closeModal('modal-server');
+            let o1 = players.find(x => x.id === p1Id), o2 = players.find(x => x.id === p2Id);
+            let stats1 = calculatePlayerStats(p1Id), stats2 = calculatePlayerStats(p2Id);
+            let score1 = stats1.wins * 3 + stats1.totalAces * 0.2, score2 = stats2.wins * 3 + stats2.totalAces * 0.2;
+            if(stats1.totalMatches === 0 && stats2.totalMatches === 0) { score1 = 50; score2 = 50; }
+            let totalS = score1 + score2, prob1 = totalS > 0 ? Math.round((score1 / totalS) * 100) : 50;
+            if(prob1 < 15) prob1 = 15; if(prob1 > 85) prob1 = 85;
+
+            activeMatch = {
+                id: "match_" + Date.now(), date: new Date().toLocaleDateString('sk-SK') + " " + new Date().toLocaleTimeString('sk-SK', {hour: '2-digit', minute:'2-digit'}),
+                p1Id: p1Id, p2Id: p2Id, p1: `${o1.first} ${o1.last}`, p2: `${o2.first} ${o2.last}`,
+                setsTarget: setsTarget, server: firstServer, p1Sets: 0, p2Sets: 0, p1Games: 0, p2Games: 0, p1Points: "0", p2Points: "0",
+                setScores: [], history: [], pointTimeline: [], startProb1: prob1, startProb2: 100 - prob1
+            };
+
+            activeMatch.pointTimeline.push({ time: "00:00", text: `🏳️ Zápas spustený. Prvý podáva: ${firstServer === 1 ? activeMatch.p1 : activeMatch.p2}.`, scoreSnapshot: "0:0, 0:0, 0-0", isServerAnnouncement: true });
+            secondsElapsed = 0; clearInterval(timerId);
+            timerId = setInterval(() => {
+                secondsElapsed++; document.getElementById('match-timer').innerText = `${Math.floor(secondsElapsed / 60).toString().padStart(2, '0')}:${(secondsElapsed % 60).toString().padStart(2, '0')}`;
+            }, 1000);
+            applyMatchStateToUI(true); showSection('match');
+        }
+
+        function applyMatchStateToUI(shouldMoveDots = true) {
+            if (!activeMatch) return;
+            document.getElementById('match-target-label').innerText = activeMatch.setsTarget;
+            document.getElementById('name-p1').innerText = activeMatch.p1; document.getElementById('name-p2').innerText = activeMatch.p2;
+            document.getElementById('btn-label-p1').innerText = activeMatch.p1; document.getElementById('btn-label-p2').innerText = activeMatch.p2;
+            document.getElementById('sets-p1').innerText = activeMatch.p1Sets; document.getElementById('sets-p2').innerText = activeMatch.p2Sets;
+            document.getElementById('games-p1').innerText = activeMatch.p1Games; document.getElementById('games-p2').innerText = activeMatch.p2Games;
+            document.getElementById('points-p1').innerText = activeMatch.p1Points; document.getElementById('points-p2').innerText = activeMatch.p2Points;
+            document.getElementById('s-dot-1').style.visibility = activeMatch.server === 1 ? "visible" : "hidden";
+            document.getElementById('s-dot-2').style.visibility = activeMatch.server === 2 ? "visible" : "hidden";
+
+            document.getElementById('start-prob-p1').style.width = activeMatch.startProb1 + "%"; document.getElementById('start-prob-p1').innerText = activeMatch.startProb1 + "%";
+            document.getElementById('start-prob-p2').style.width = activeMatch.startProb2 + "%"; document.getElementById('start-prob-p2').innerText = activeMatch.startProb2 + "%";
+
+            let live1 = activeMatch.startProb1, totalGamesP1 = activeMatch.p1Games, totalGamesP2 = activeMatch.p2Games;
+            activeMatch.setScores.forEach(s => { totalGamesP1 += s.p1; totalGamesP2 += s.p2; });
+            live1 += (activeMatch.p1Sets - activeMatch.p2Sets) * 25 + (totalGamesP1 - totalGamesP2) * 4;
+            let p1PtIdx = tennisPoints.indexOf(activeMatch.p1Points), p2PtIdx = tennisPoints.indexOf(activeMatch.p2Points);
+            if (activeMatch.p1Points === "A") { p1PtIdx = 4; p2PtIdx = 3; } if (activeMatch.p2Points === "A") { p1PtIdx = 3; p2PtIdx = 4; }
+            live1 += (p1PtIdx - p2PtIdx) * 1.5;
+            if (live1 < 5) live1 = 5; if (live1 > 95) live1 = 95; live1 = Math.round(live1);
+            document.getElementById('live-prob-p1').style.width = live1 + "%"; document.getElementById('live-prob-p1').innerText = live1 + "%";
+            document.getElementById('live-prob-p2').style.width = (100 - live1) + "%"; document.getElementById('live-prob-p2').innerText = (100 - live1) + "%";
+
+            let init1 = getPlayerInitials(activeMatch.p1Id), init2 = getPlayerInitials(activeMatch.p2Id);
+            document.getElementById('dot-p1').innerText = activeMatch.server === 1 ? "🎾 " + init1 : init1;
+            document.getElementById('dot-p2').innerText = activeMatch.server === 2 ? init2 + " 🎾" : init2;
+
+            if (shouldMoveDots) {
+                let totalPointsInGame = getTotalPointsInCurrentGame();
+                let positions = [{p1: {top: '25%', left: '20%'}, p2: {top: '75%', left: '80%'}}, {p1: {top: '75%', left: '20%'}, p2: {top: '25%', left: '80%'}}];
+                let currentPos = positions[totalPointsInGame % positions.length];
+                document.getElementById('dot-p1').style.top = currentPos.p1.top; document.getElementById('dot-p1').style.left = currentPos.p1.left;
+                document.getElementById('dot-p2').style.top = currentPos.p2.top; document.getElementById('dot-p2').style.left = currentPos.p2.left;
+            }
+            document.getElementById('btn-fault-p1').disabled = activeMatch.server !== 1; document.getElementById('btn-fault-p2').disabled = activeMatch.server !== 2;
+        }
+
+        function saveState() {
+            activeMatch.history.push(JSON.stringify({
+                server: activeMatch.server, p1Sets: activeMatch.p1Sets, p2Sets: activeMatch.p2Sets, p1Games: activeMatch.p1Games, p2Games: activeMatch.p2Games,
+                p1Points: activeMatch.p1Points, p2Points: activeMatch.p2Points, setScores: [...activeMatch.setScores], timelineCount: activeMatch.pointTimeline.length
+            }));
+        }
+
+        function triggerDirectAce() { if (activeMatch) registerPointAction(activeMatch.server, 'ace'); }
+
+        function registerPointAction(scorer, type = 'regular', triggerUIUpdateWithMovement = true) {
+            if (!activeMatch) return;
+            saveState();
+            let timeStr = document.getElementById('match-timer').innerText;
+            let isTiebreak = (activeMatch.p1Games === 6 && activeMatch.p2Games === 6);
+
+            if (isTiebreak) {
+                let p1T = parseInt(activeMatch.p1Points), p2T = parseInt(activeMatch.p2Points);
+                if (scorer === 1) p1T++; else p2T++;
+                activeMatch.p1Points = p1T.toString(); activeMatch.p2Points = p2T.toString();
+                if ((p1T + p2T) % 2 === 1) activeMatch.server = (activeMatch.server === 1) ? 2 : 1;
+                if (p1T >= 7 && (p1T - p2T) >= 2) { logPointToTimeline(scorer, type, timeStr, true); winGame(1); return; }
+                else if (p2T >= 7 && (p2T - p1T) >= 2) { logPointToTimeline(scorer, type, timeStr, true); winGame(2); return; }
+                logPointToTimeline(scorer, type, timeStr, false);
+            } else {
+                if (scorer === 1) {
+                    if (activeMatch.p1Points === "0") activeMatch.p1Points = "15";
+                    else if (activeMatch.p1Points === "15") activeMatch.p1Points = "30";
+                    else if (activeMatch.p1Points === "30") activeMatch.p1Points = "40";
+                    else if (activeMatch.p1Points === "40") {
+                        if (activeMatch.p2Points === "40") activeMatch.p1Points = "A";
+                        else if (activeMatch.p1Points === "A") activeMatch.p2Points = "40";
+                        else { logPointToTimeline(scorer, type, timeStr, true); winGame(1); return; }
+                    } else if (activeMatch.p1Points === "A") { logPointToTimeline(scorer, type, timeStr, true); winGame(1); return; }
+                } else {
+                    if (activeMatch.p2Points === "0") activeMatch.p2Points = "15";
+                    else if (activeMatch.p2Points === "15") activeMatch.p2Points = "30";
+                    else if (activeMatch.p2Points === "30") activeMatch.p2Points = "40";
+                    else if (activeMatch.p2Points === "40") {
+                        if (activeMatch.p1Points === "40") activeMatch.p2Points = "A";
+                        else if (activeMatch.p1Points === "A") activeMatch.p1Points = "40";
+                        else { logPointToTimeline(scorer, type, timeStr, true); winGame(2); return; }
+                    } else if (activeMatch.p2Points === "A") { logPointToTimeline(scorer, type, timeStr, true); winGame(2); return; }
+                }
+                logPointToTimeline(scorer, type, timeStr, false);
+            }
+            applyMatchStateToUI(triggerUIUpdateWithMovement);
+        }
+
+        function logPointToTimeline(scorer, type, timeStr, isGameEndingPoint) {
+            let desc = "", scorerName = (scorer === 1) ? activeMatch.p1 : activeMatch.p2;
+            let isHawkEye = type.startsWith('hawkeye');
+
+            if (type === 'ace') desc = `⚡ ESO! Výborné priame podanie pre hráča ${scorerName}.`;
+            else if (type === 'hawkeye_ace') desc = `🦅⚡ ESO po Jastrabom oku pripísané hráčovi ${scorerName}!`;
+            else if (type === 'fault_p1' || type === 'fault_p2') desc = `⚠️ Dvojchyba hráča ${(type === 'fault_p1') ? activeMatch.p1 : activeMatch.p2}. Bod získava súper.`;
+            else if (type === 'hawkeye_regular') desc = `🦅 Bod úspešne pripísaný Jastrabím okom pre hráča ${scorerName}.`;
+            else desc = `🎾 Bod pre hráča ${scorerName} po úspešnej výmene.`;
+
+            if (isGameEndingPoint) desc += " (Koniec gemu)";
+            activeMatch.pointTimeline.push({ 
+                time: timeStr, text: desc, 
+                scoreSnapshot: `${activeMatch.p1Sets}:${activeMatch.p2Sets} | ${activeMatch.p1Games}:${activeMatch.p2Games} | ${activeMatch.p1Points}-${activeMatch.p2Points}`, 
+                scorer: scorer, type: type, serverAtPoint: activeMatch.server, isHawkEyeEvent: isHawkEye
+            });
+        }
+
+        function winGame(winnerNum) {
+            let timeStr = document.getElementById('match-timer').innerText;
+            if (winnerNum === 1) activeMatch.p1Games++; else activeMatch.p2Games++;
+            activeMatch.p1Points = "0"; activeMatch.p2Points = "0"; activeMatch.server = (activeMatch.server === 1) ? 2 : 1;
+            let g1 = activeMatch.p1Games, g2 = activeMatch.p2Games;
+            if ((g1 >= 6 && (g1 - g2) >= 2) || (g1 === 7 && g2 === 6)) { logServerAnnouncement(timeStr, `🟢 Hráč ${activeMatch.p1} získava SET pomerom ${g1}:${g2}.`); winSet(1); return; }
+            else if ((g2 >= 6 && (g2 - g1) >= 2) || (g2 === 7 && g1 === 6)) { logServerAnnouncement(timeStr, `🟢 Hráč ${activeMatch.p2} získava SET pomerom ${g2}:${g1}.`); winSet(2); return; }
+            if (activeMatch.p1Games === 6 && activeMatch.p2Games === 6) logServerAnnouncement(timeStr, `🚨 Stav je 6:6. Nasleduje TIEBREAK! Podáva: ${activeMatch.server === 1 ? activeMatch.p1 : activeMatch.p2}.`);
+            else logServerAnnouncement(timeStr, `📣 Nový gem. Podáva: ${activeMatch.server === 1 ? activeMatch.p1 : activeMatch.p2}.`);
+            applyMatchStateToUI(true);
+        }
+
+        function logServerAnnouncement(timeStr, text) {
+            activeMatch.pointTimeline.push({ time: timeStr, text: text, scoreSnapshot: `${activeMatch.p1Sets}:${activeMatch.p2Sets} | ${activeMatch.p1Games}:${activeMatch.p2Games}`, isServerAnnouncement: true });
+        }
+
+        function winSet(winnerNum) {
+            let timeStr = document.getElementById('match-timer').innerText;
+            activeMatch.setScores.push({ p1: activeMatch.p1Games, p2: activeMatch.p2Games });
+            if (winnerNum === 1) activeMatch.p1Sets++; else activeMatch.p2Sets++;
+            activeMatch.p1Games = 0; activeMatch.p2Games = 0;
+            if (activeMatch.p1Sets === activeMatch.setsTarget) { endMatch(1); return; }
+            else if (activeMatch.p2Sets === activeMatch.setsTarget) { endMatch(2); return; }
+            logServerAnnouncement(timeStr, `🏁 Začína nový set. Na servise pokračuje: ${activeMatch.server === 1 ? activeMatch.p1 : activeMatch.p2}.`);
+            applyMatchStateToUI(true);
+        }
+
+        function endMatch(winnerNum) {
+            clearInterval(timerId); let timeStr = document.getElementById('match-timer').innerText, wName = (winnerNum === 1) ? activeMatch.p1 : activeMatch.p2;
+            activeMatch.pointTimeline.push({ time: timeStr, text: `🏆 ZÁPAS SKONČIL. VÍŤAZOM SA STÁVA: ${wName}!`, scoreSnapshot: `Sety [${activeMatch.p1Sets}:${activeMatch.p2Sets}]`, isWinnerAnnouncement: true });
+            cachedWinnerNum = winnerNum;
+            cachedFinalState = {
+                id: activeMatch.id, date: activeMatch.date, p1Id: activeMatch.p1Id, p2Id: activeMatch.p2Id, p1: activeMatch.p1, p2: activeMatch.p2,
+                p1Sets: activeMatch.p1Sets, p2Sets: activeMatch.p2Sets, setScores: [...activeMatch.setScores], duration: timeStr, winner: winnerNum,
+                pointTimeline: [...activeMatch.pointTimeline], startProb1: activeMatch.startProb1, startProb2: activeMatch.startProb2
+            };
+            document.getElementById('winner-modal-name').innerText = wName;
+            document.getElementById('winner-modal-score').innerText = `Konečné skóre setov: ${activeMatch.p1Sets} : ${activeMatch.p2Sets} (${activeMatch.setScores.map(s => `${s.p1}:${s.p2}`).join(', ')})`;
+            openModal('modal-winner');
+        }
+
+        function saveAndExitFinishedMatch() {
+            closeModal('modal-winner');
+            if (cachedFinalState) { matchHistory.unshift(cachedFinalState); localStorage.setItem('tennis_match_history_pro', JSON.stringify(matchHistory)); }
+            activeMatch = null; cachedFinalState = null; cachedWinnerNum = null;
+            renderHistoryList(); showSection('match');
+        }
+
+        function undoPoint(isHawkEyeOverride = false) {
+            if (!activeMatch || activeMatch.history.length === 0) { alert("Niet čo vrátiť späť!"); return; }
+            let last = JSON.parse(activeMatch.history.pop());
+            activeMatch.server = last.server; activeMatch.p1Sets = last.p1Sets; activeMatch.p2Sets = last.p2Sets;
+            activeMatch.p1Games = last.p1Games; activeMatch.p2Games = last.p2Games; activeMatch.p1Points = last.p1Points;
+            activeMatch.p2Points = last.p2Points; activeMatch.setScores = last.setScores;
+
+            if (!isHawkEyeOverride) { while (activeMatch.pointTimeline.length > last.timelineCount) activeMatch.pointTimeline.pop(); }
+            applyMatchStateToUI(true);
+        }
+
+        function openAbortModal() { openModal('modal-abort'); }
+
+        function handleAbortAction(action) {
+            closeModal('modal-abort'); if(timerId) { clearInterval(timerId); timerId = null; }
+            if (action === 'save' && activeMatch) {
+                let timeStr = document.getElementById('match-timer').innerText;
+                let currentWinner = (activeMatch.p2Sets > activeMatch.p1Sets || (activeMatch.p2Sets === activeMatch.p1Sets && activeMatch.p2Games > activeMatch.p1Games)) ? 2 : 1;
+                let partialSetScores = [...activeMatch.setScores];
+                if (activeMatch.p1Games > 0 || activeMatch.p2Games > 0) partialSetScores.push({ p1: activeMatch.p1Games, p2: activeMatch.p2Games });
+                activeMatch.pointTimeline.push({ time: timeStr, text: `🛑 Zápas bol predčasne ukončený rozhodcom.`, scoreSnapshot: `Stop za stavu: ${activeMatch.p1Sets}:${activeMatch.p2Sets}`, isWinnerAnnouncement: true });
+
+                matchHistory.unshift({
+                    id: activeMatch.id, date: activeMatch.date + " (Nedohrané)", p1Id: activeMatch.p1Id, p2Id: activeMatch.p2Id, p1: activeMatch.p1, p2: activeMatch.p2,
+                    p1Sets: activeMatch.p1Sets, p2Sets: activeMatch.p2Sets, setScores: partialSetScores, duration: timeStr, winner: currentWinner,
+                    pointTimeline: [...activeMatch.pointTimeline], startProb1: activeMatch.startProb1, startProb2: activeMatch.startProb2
+                });
+                localStorage.setItem('tennis_match_history_pro', JSON.stringify(matchHistory));
+            }
+            activeMatch = null; renderHistoryList(); showSection('match');
+        }
+
+        function startHawkEyeProcess() {
+            if (!activeMatch) return;
+            heState = { requester: null, type: null, verdict: null, action: null, targetPlayer: null };
+            document.getElementById('btn-he-req-p1').innerText = `🟢 ${activeMatch.p1}`; document.getElementById('btn-he-req-p2').innerText = `🔵 ${activeMatch.p2}`;
+            openModal('he-modal-requester');
+        }
+
+        function submitHawkEyeRequester(playerNum) { heState.requester = playerNum; closeModal('he-modal-requester'); openModal('he-modal-type'); }
+        function submitHawkEyeType(type) { heState.type = type; closeModal('he-modal-type'); openModal('he-modal-verdict'); }
+
+        function submitHawkEyeVerdict(isAccepted) {
+            closeModal('he-modal-verdict'); heState.verdict = isAccepted;
+            let timeStr = document.getElementById('match-timer').innerText;
+            let reqName = (heState.requester === 1) ? activeMatch.p1 : activeMatch.p2;
+            let typeLabel = heState.type === 'ace' ? 'Eso' : (heState.type === 'fault' ? 'Dvojchybu' : 'Klasický bod');
+
+            if (!isAccepted) {
+                activeMatch.pointTimeline.push({ 
+                    time: timeStr, text: `🦅 Jastrabie oko: Výzva hráča ${reqName} pre [${typeLabel}] bola NEÚSPEŠNÁ. Pôvodný výrok platí.`, 
+                    scoreSnapshot: `${activeMatch.p1Sets}:${activeMatch.p2Sets} | ${activeMatch.p1Games}:${activeMatch.p2Games} | ${activeMatch.p1Points}-${activeMatch.p2Points}`, 
+                    isHawkEyeEvent: true 
+                });
+                applyMatchStateToUI(false); return;
+            }
+            openModal('he-modal-action-choice');
+        }
+
+        function selectHawkEyeAction(action) {
+            closeModal('he-modal-action-choice'); heState.action = action; 
+            if (action === 'add') {
+                document.getElementById('he-target-title').innerText = "Komu sa má bod PRIPÍSAŤ?";
+                document.getElementById('btn-he-target-p1').innerText = `🟢 ${activeMatch.p1}`; document.getElementById('btn-he-target-p2').innerText = `🔵 ${activeMatch.p2}`;
+                openModal('he-modal-target-player');
+            } else if (action === 'delete') {
+                document.getElementById('he-target-title').innerText = "Komu sa má bod VYMAZAŤ?";
+                document.getElementById('btn-he-target-p1').innerText = `❌ ${activeMatch.p1}`; document.getElementById('btn-he-target-p2').innerText = `❌ ${activeMatch.p2}`;
+                openModal('he-modal-target-player');
+            }
+        }
+
+        function submitHawkEyeTargetPlayer(playerNum) {
+            closeModal('he-modal-target-player'); heState.targetPlayer = playerNum;
+            if (heState.action === 'add') { 
+                executeHawkEyeAdd(); 
+            } 
+            else if (heState.action === 'delete') { 
+                if (heState.type === 'regular') {
+                    let opponentNum = (heState.targetPlayer === 1) ? 2 : 1;
+                    let opponentName = (opponentNum === 1) ? activeMatch.p1 : activeMatch.p2;
+                    document.getElementById('he-opponent-name').innerText = opponentName;
+                    openModal('he-modal-compensate-opponent');
+                } else {
+                    executeHawkEyeDelete(false);
+                }
+            }
+        }
+
+        function submitHawkEyeCompensate(shouldCompensate) {
+            closeModal('he-modal-compensate-opponent');
+            executeHawkEyeDelete(shouldCompensate);
+        }
+
+        function executeHawkEyeAdd() {
+            let subType = heState.type === 'ace' ? 'hawkeye_ace' : 'hawkeye_regular';
+            registerPointAction(heState.targetPlayer, subType, true);
+        }
+
+        function executeHawkEyeDelete(shouldCompensateOpponent = false) {
+            let timeStr = document.getElementById('match-timer').innerText;
+            let reqName = (heState.requester === 1) ? activeMatch.p1 : activeMatch.p2;
+            let targetName = (heState.targetPlayer === 1) ? activeMatch.p1 : activeMatch.p2;
+            let typeLabel = heState.type === 'ace' ? 'Eso' : (heState.type === 'fault' ? 'Dvojchybu' : 'Klasický bod');
+
+            undoPoint(true);
+
+            if (shouldCompensateOpponent) {
+                let opponentNum = (heState.targetPlayer === 1) ? 2 : 1;
+                let opponentName = (opponentNum === 1) ? activeMatch.p1 : activeMatch.p2;
+                
+                registerPointAction(opponentNum, 'hawkeye_regular', false);
+                
+                activeMatch.pointTimeline.push({ 
+                    time: timeStr, text: `🦅 Jastrabie oko: Výzva hráča ${reqName} [${typeLabel}] ÚSPEŠNÁ. Bod hráča ${targetName} zmazaný a pripísaný súperovi ${opponentName}.`, 
+                    scoreSnapshot: `${activeMatch.p1Sets}:${activeMatch.p2Sets} | ${activeMatch.p1Games}:${activeMatch.p2Games} | ${activeMatch.p1Points}-${activeMatch.p2Points}`, 
+                    isHawkEyeEvent: true 
+                });
+            } else {
+                activeMatch.pointTimeline.push({ 
+                    time: timeStr, text: `🦅 Jastrabie oko: Výzva hráča ${reqName} [${typeLabel}] ÚSPEŠNÁ. Bod hráča ${targetName} bol iba VYMAZANÝ.`, 
+                    scoreSnapshot: `${activeMatch.p1Sets}:${activeMatch.p2Sets} | ${activeMatch.p1Games}:${activeMatch.p2Games} | ${activeMatch.p1Points}-${activeMatch.p2Points}`, 
+                    isHawkEyeEvent: true 
+                });
+            }
+            
+            applyMatchStateToUI(true);
+        }
+
+        function openMisconductModal(playerNum) { currentMisconductPlayerNum = playerNum; document.getElementById('misconduct-player-name').innerText = (playerNum === 1) ? activeMatch.p1 : activeMatch.p2; openModal('modal-misconduct'); }
+
+        function selectMisconductDirect(reason) {
+            closeModal('modal-misconduct'); if (!activeMatch) return;
+            let offenderName = (currentMisconductPlayerNum === 1) ? activeMatch.p1 : activeMatch.p2; let timeStr = document.getElementById('match-timer').innerText;
+            activeMatch.pointTimeline.push({ 
+                time: timeStr, text: `⚠️ NAPOMENUTIE: Hráč ${offenderName} bol napomenutý za [${reason}].`, 
+                scoreSnapshot: `${activeMatch.p1Sets}:${activeMatch.p2Sets} | ${activeMatch.p1Games}:${activeMatch.p2Games} | ${activeMatch.p1Points}-${activeMatch.p2Points}`, isMisconduct: true 
+            });
+            applyMatchStateToUI(false);
+        }
+
+        function renderHistoryList() {
+            let container = document.getElementById('history-list'); if (!matchHistory || matchHistory.length === 0) { container.innerHTML = "<i>Žiadne odohrané zápasy v histórii.</i>"; return; }
+            container.innerHTML = "";
+            matchHistory.forEach(m => {
+                container.innerHTML += `
+                    <div class="history-item">
+                        <div style="flex: 1; padding-right: 15px;">
+                            <div style="font-size: 13px; color: #ccc; margin-bottom: 4px;">📅 ${m.date || 'Neznámy dátum'} | ⏱ Trvanie: ${m.duration || '00:00'}</div>
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;"><span style="color:#2ed573;">${m.p1 || 'Hráč 1'}</span> vs <span style="color:#1e90ff;">${m.p2 || 'Hráč 2'}</span></div>
+                            <div style="font-size: 15px; color: #eee;">Sety: <strong>${m.p1Sets ?? 0} : ${m.p2Sets ?? 0}</strong> <span style="color: #bbb; font-size:13px;">(${m.setScores ? m.setScores.map(s => `${s.p1}:${s.p2}`).join(', ') : ''})</span></div>
+                            <div style="font-size: 14px; margin-top: 5px; color: var(--primary);">🏆 Víťaz: <strong>${(m.winner === 1) ? (m.p1 || 'Hráč 1') : (m.p2 || 'Hráč 2')}</strong></div>
+                        </div>
+                        <div class="history-actions">
+                            <button class="btn-info" style="padding: 8px 12px; font-size: 13px;" onclick="viewMatchDetails('${m.id}')">Zobraziť priebeh</button>
+                            <button class="btn-danger" style="padding: 8px 12px; font-size: 13px;" onclick="askDeleteMatch('${m.id}')">Zmazať</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function askDeleteMatch(matchId) {
+            matchIdToDelete = matchId; let m = matchHistory.find(x => x.id === matchId);
+            document.getElementById('delete-modal-match-name').innerText = m ? `${m.p1} VS ${m.p2}` : "...";
+            document.getElementById('btn-confirm-delete-execute').onclick = function() {
+                matchHistory = matchHistory.filter(x => x.id !== matchIdToDelete); localStorage.setItem('tennis_match_history_pro', JSON.stringify(matchHistory));
+                closeModal('modal-confirm-delete'); renderHistoryList();
+            };
+            openModal('modal-confirm-delete');
+        }
+
+        function viewMatchDetails(matchId) {
+            let m = matchHistory.find(x => x.id === matchId); if (!m) return;
+            document.getElementById('det-board-title').innerHTML = `<span style="color:#2ed573;">${m.p1 || 'Hráč 1'}</span> <span style="color:#fff; font-size:14px;">VS</span> <span style="color:#1e90ff;">${m.p2 || 'Hráč 2'}</span>`;
+            document.getElementById('det-board-date').innerText = `Dátum konania: ${m.date || 'Neznámy'}`;
+            document.getElementById('det-board-p1-name').innerText = m.p1 || 'Hráč 1'; document.getElementById('det-board-p2-name').innerText = m.p2 || 'Hráč 2';
+            document.getElementById('det-board-p1-sets').innerText = m.p1Sets ?? 0; document.getElementById('det-board-p2-sets').innerText = m.p2Sets ?? 0;
+            document.getElementById('det-board-p1-details').innerText = m.setScores ? m.setScores.map(s => s.p1).join(' | ') : '-';
+            document.getElementById('det-board-p2-details').innerText = m.setScores ? m.setScores.map(s => s.p2).join(' | ') : '-';
+            document.getElementById('det-board-duration').innerText = m.duration || '00:00'; document.getElementById('det-board-winner').innerText = (m.winner === 1) ? (m.p1 || 'Hráč 1') : (m.p2 || 'Hráč 2');
+
+            if(m.startProb1 !== undefined) {
+                document.getElementById('det-board-start-prob').classList.remove('hidden');
+                document.getElementById('det-board-prob-val').innerText = `${m.p1 || 'Hráč 1'} (${m.startProb1}%) vs ${m.p2 || 'Hráč 2'} (${m.startProb2}%)`;
+            } else { document.getElementById('det-board-start-prob').classList.add('hidden'); }
+
+            let tlContainer = document.getElementById('det-board-timeline-container'); tlContainer.innerHTML = "";
+            if (m.pointTimeline && m.pointTimeline.length > 0) {
+                m.pointTimeline.forEach(t => {
+                    let typeClass = "";
+                    if (t.isHawkEyeEvent || (t.text && t.text.includes('🦅'))) typeClass = "tl-item-hawkeye";
+                    else if (t.isServerAnnouncement) typeClass = "tl-item-announcement";
+                    else if (t.isWinnerAnnouncement) typeClass = "tl-item-winner";
+                    else if (t.isMisconduct) typeClass = "tl-item-misconduct";
+
+                    tlContainer.innerHTML += `
+                        <div class="large-timeline-item ${typeClass}">
+                            <div class="tl-time">⏱ ${t.time}</div>
+                            <div class="tl-text">${t.text}</div>
+                            <div class="tl-score">${t.scoreSnapshot}</div>
+                        </div>`;
+                });
+            } else { tlContainer.innerHTML = '<i>Záznam nie je k dispozícii.</i>'; }
+            openModal('modal-match-details');
+        }
+    </script>
+</body>
+</html>
